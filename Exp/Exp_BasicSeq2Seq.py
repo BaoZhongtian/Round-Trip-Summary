@@ -7,7 +7,7 @@ from Tools import ProgressBar, save_model
 
 episode_number = 10
 learning_rate = 1E-5
-save_path = 'E:/ProjectData/BasicSeq2Seq/'
+save_path = 'E:/ProjectData/BasicSeq2Seq-Another/'
 if not os.path.exists(save_path): os.makedirs(save_path)
 
 if __name__ == '__main__':
@@ -36,7 +36,9 @@ if __name__ == '__main__':
                                      range(len(summary_label_masked[i]))] for i in range(len(summary_label_masked))]
             summary_label_masked = torch.LongTensor(numpy.array(summary_label_masked)).cuda()
             loss = model(input_ids=article_ids, attention_mask=article_mask, decoder_input_ids=summary_ids,
-                         decoder_attention_mask=summary_mask, lm_labels=summary_label_masked)[0]
+                         lm_labels=summary_label_masked)[0]
+            # loss = model(input_ids=article_ids, attention_mask=article_mask, decoder_input_ids=summary_ids,
+            #              decoder_attention_mask=summary_mask, lm_labels=summary_label_masked)[0]
 
             if torch.cuda.device_count() > 1: loss = torch.mean(loss)
             pbar(episode_index * len(train_data) + batch_index, {'loss': loss.item()})
