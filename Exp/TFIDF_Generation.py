@@ -47,7 +47,7 @@ if __name__ == '__main__':
     pickle.dump(vectorizer, open('TFIDF_CountVectorizer.pkl', 'wb'))
     pickle.dump(transformer, open('TFIDF_TfidfTransformer.pkl', 'wb'))
     # exit()
-
+    
     total_result = []
     for sample_index in tqdm.trange(len(weight)):
         result = {'filename': train_data[sample_index]['filename'], 'words': []}
