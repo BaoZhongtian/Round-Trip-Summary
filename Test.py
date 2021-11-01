@@ -1,24 +1,15 @@
 import os
-from transformers import EncoderDecoderModel, BertTokenizer
-import torch
+import json
+import tqdm
+import numpy
+from rouge_score import rouge_scorer
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "1"
-
-tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
-model = EncoderDecoderModel.from_encoder_decoder_pretrained(
-    'E:/ProjectData/BasicSeq2Seq/00014999-Encoder',
-    'E:/ProjectData/BasicSeq2Seq/00014999-Decoder')  # initialize Bert2Bert
-
-# forward
-input_ids = torch.tensor(tokenizer.encode("Hello, my dog is cute", add_special_tokens=True)).unsqueeze(
-    0)  # Batch size 1
-outputs = model(input_ids=input_ids, decoder_input_ids=input_ids)
-
-# training
-# loss, outputs = model(input_ids=input_ids, decoder_input_ids=input_ids, lm_labels=input_ids)[:2]
-# print(loss, outputs)
-# generation
-generated = model.generate(input_ids, dercoder_start_token_id=model.config.decoder.pad_token_id,
-                           bos_token_id=model.config.decoder.pad_token_id)
-print(generated)
-print(tokenizer.convert_tokens_to_string(tokenizer.convert_ids_to_tokens(generated.squeeze())))
+if __name__ == '__main__':
+    load_path = 'C:/PythonProject/DataSource-CNNDM-BART-Predict/val/'
+    scorer = rouge_scorer.RougeScorer(['rouge1', 'rouge2', 'rougeL'], use_stemmer=True)
+    total_score = []
+    for filename in tqdm.tqdm(os.listdir(load_path)):
+        current_sample = json.load(open(os.path.join(load_path, filename), 'r'))
+        score = scorer.score(target=current_sample['summary'], prediction=current_sample['predict'])
+        total_score.append([score['rouge1'].fmeasure, score['rouge2'].fmeasure, score['rougeL'].fmeasure])
+    print(numpy.average(total_score, axis=0))
