@@ -1,7 +1,7 @@
 import os
 import torch
 import numpy
-from Loader import loader_cnndm
+from HistoricalRecord.Loader import loader_cnndm
 from transformers import EncoderDecoderModel
 from Tools import ProgressBar, save_model
 

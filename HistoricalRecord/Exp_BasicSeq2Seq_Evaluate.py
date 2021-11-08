@@ -1,10 +1,8 @@
 import os
 import tqdm
-import torch
-import numpy
 import json
 from transformers import EncoderDecoderModel, BertTokenizer
-from Loader import loader_cnndm
+from HistoricalRecord.Loader import loader_cnndm
 
 load_path = 'E:/ProjectData/BasicSeq2Seq-Another/'
 save_path = 'E:/ProjectData/BasicSeq2Seq-Another-Evaluate/'

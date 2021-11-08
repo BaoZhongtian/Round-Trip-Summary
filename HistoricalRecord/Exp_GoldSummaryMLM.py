@@ -1,6 +1,6 @@
 import os
 import torch
-from Loader import loader_cnndm
+from HistoricalRecord.Loader import loader_cnndm
 from transformers import BertForMaskedLM
 from Tools import ProgressBar, save_model
 

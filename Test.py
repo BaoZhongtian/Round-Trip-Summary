@@ -1,15 +1,13 @@
-import os
 import json
-import tqdm
-import numpy
-from rouge_score import rouge_scorer
+import matplotlib.pylab as plt
+from matplotlib import ticker
 
-if __name__ == '__main__':
-    load_path = 'C:/PythonProject/DataSource-CNNDM-BART-Predict/val/'
-    scorer = rouge_scorer.RougeScorer(['rouge1', 'rouge2', 'rougeL'], use_stemmer=True)
-    total_score = []
-    for filename in tqdm.tqdm(os.listdir(load_path)):
-        current_sample = json.load(open(os.path.join(load_path, filename), 'r'))
-        score = scorer.score(target=current_sample['summary'], prediction=current_sample['predict'])
-        total_score.append([score['rouge1'].fmeasure, score['rouge2'].fmeasure, score['rougeL'].fmeasure])
-    print(numpy.average(total_score, axis=0))
+fig, ax = plt.subplots()
+article_len = json.load(open('article_len.json', 'r'))
+article_len = sorted(article_len)
+plt.plot(article_len)
+plt.title('CNN/DM Article Length')
+plt.xlabel('Percent of Article Length <X')
+plt.ylabel('Article Length')
+ax.xaxis.set_major_formatter(ticker.PercentFormatter(xmax=len(article_len), decimals=1))
+plt.show()
