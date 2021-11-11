@@ -5,8 +5,10 @@ import torch
 from torch.utils.data import DataLoader
 from transformers import BertTokenizer, BartTokenizer
 
-# LOAD_PATH = 'C:/PythonProject/DataSource/'
-LOAD_PATH = 'D:/ProjectData/CNNDM/'
+LOAD_PATH = 'C:/PythonProject/DataSource/'
+
+
+# LOAD_PATH = 'D:/ProjectData/CNNDM/'
 
 
 class CollateClass:
@@ -134,9 +136,12 @@ def loader_cnndm(
 
 
 if __name__ == '__main__':
-    tokenizer = BartTokenizer.from_pretrained('D:/ProjectData/bart-cnn-neo')
+    tokenizer = BartTokenizer.from_pretrained('C:/PythonProject/bart-large')
     train_loader, val_loader, test_loader = loader_cnndm(
         batch_size=4, tokenizer=tokenizer, keywords_name='SalientWords')
+    for sample in val_loader:
+        print(sample)
+        exit()
 #
 #     article_len, summary_len = [], []
 #     for batch_data in tqdm.tqdm(train_loader):

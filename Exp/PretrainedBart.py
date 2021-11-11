@@ -3,7 +3,7 @@ import json
 import tqdm
 from transformers import BartTokenizer, BartForConditionalGeneration
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "2"
+os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
 if __name__ == '__main__':
     load_path = 'C:/PythonProject/DataSource/'
@@ -17,9 +17,9 @@ if __name__ == '__main__':
     model.cuda()
 
     for treat_index, treat_sample in enumerate(tqdm.tqdm(test_data)):
-        # if os.path.exists(os.path.join(save_path, '%08d.json' % treat_index)): continue
-        # with open(os.path.join(save_path, '%08d.json' % treat_index), 'w'):
-        #     pass
+        if os.path.exists(os.path.join(save_path, '%08d.json' % treat_index)): continue
+        with open(os.path.join(save_path, '%08d.json' % treat_index), 'w'):
+            pass
 
         treat_article = ' ' + treat_sample['article']
         inputs = tokenizer([treat_article], max_length=1000, return_tensors='pt')

@@ -6,7 +6,7 @@ from rouge_score import rouge_scorer
 from transformers import BartTokenizer
 
 if __name__ == '__main__':
-    load_path = 'C:/PythonProject/DataSource-CNNDM-BART-Predict/test-beam-4-length-penalty-1/'
+    load_path = 'C:/PythonProject/DataSource-CNNDM-BART-Predict/test-vanilla/'
     scorer = rouge_scorer.RougeScorer(['rouge1', 'rouge2', 'rougeL'], use_stemmer=True)
     total_score = []
     # tokenizer = BartTokenizer.from_pretrained('C:/PythonProject/bart-cnn-neo')
