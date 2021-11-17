@@ -109,9 +109,9 @@ if __name__ == '__main__':
         total_result = []
         for batch_index, batch_article in enumerate(tqdm.tqdm(test_loader)):
             # if batch_index > 10: break
-            article_ids, article_label = batch_article['input_ids'].cuda(), batch_article['mlm_label']
+            # article_ids, article_label = batch_article['input_ids'].cuda(), batch_article['mlm_label']
             # article_ids, article_label = only_context(batch_article)
-            # article_ids, article_label = pad_context(batch_article)
+            article_ids, article_label = pad_context(batch_article)
             # article_ids, article_label = predict_summary(batch_article)
             # print(tokenizer.decode(article_ids[0]))
             # exit()
@@ -129,4 +129,4 @@ if __name__ == '__main__':
                 current_sample['label'] = [int(_) for _ in numpy.array(current_sample['label'])]
                 total_result.append(current_sample)
             # break
-        json.dump(total_result, open(os.path.join(save_path, '%08d-Predict-Gold.json' % batch_number), 'w'))
+        json.dump(total_result, open(os.path.join(save_path, '%08d-Predict-OnlyPad.json' % batch_number), 'w'))

@@ -3,14 +3,16 @@ import json
 import tqdm
 import numpy
 from rouge_score import rouge_scorer
-from transformers import BartTokenizer
+
+# from transformers import BartTokenizer
 
 if __name__ == '__main__':
-    load_path = 'C:/PythonProject/DataSource-CNNDM-BART-Predict/test-vanilla/'
+    load_path = 'C:/PythonProject/DataSource-CNNDM-BART-Predict/test_shuffled/'
+    # load_path = 'E:/ProjectData/Bart-Large-CNN-Fine-Tuning-Restart/Result-00001999-Test-Shuffled/'
     scorer = rouge_scorer.RougeScorer(['rouge1', 'rouge2', 'rougeL'], use_stemmer=True)
     total_score = []
     # tokenizer = BartTokenizer.from_pretrained('C:/PythonProject/bart-cnn-neo')
-    for filename in tqdm.tqdm(os.listdir(load_path)):
+    for filename in tqdm.tqdm(os.listdir(load_path)[0:1000]):
         current_sample = json.load(open(os.path.join(load_path, filename), 'r'))
         score = scorer.score(target=current_sample['summary'], prediction=current_sample['predict'])
         total_score.append([score['rouge1'].fmeasure, score['rouge2'].fmeasure, score['rougeL'].fmeasure])

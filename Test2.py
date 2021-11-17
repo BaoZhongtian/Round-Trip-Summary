@@ -1,33 +1,76 @@
+import torch
+import torch.nn as nn
+from torch.autograd import Variable
+from torch.utils.data import Dataset, DataLoader
 import os
-import json
-import tqdm
-import numpy
-from transformers import BartTokenizer, BartForConditionalGeneration
+from torch.utils.data.distributed import DistributedSampler
 
-# os.environ["CUDA_VISIBLE_DEVICES"] = "2"
+os.environ['MASTER_ADDR'] = 'localhost'
+os.environ['MASTER_PORT'] = '5678'
 
-if __name__ == '__main__':
-    load_path = 'D:/ProjectData/CNNDM/'
 
-    test_data = json.load(open(os.path.join(load_path, 'CNNDM_test.json'), 'r'))
-    model = BartForConditionalGeneration.from_pretrained('D:/ProjectData/bart-large')
-    tokenizer = BartTokenizer.from_pretrained('D:/ProjectData/bart-large')
-    model.eval()
-    # model.cuda()
+# 1) 初始化
+torch.distributed.init_process_group()
 
-    for treat_index, treat_sample in enumerate(tqdm.tqdm(test_data)):
-        treat_article = treat_sample['article']
-        inputs = tokenizer([treat_article], max_length=1024, return_tensors='pt')
-        print(tokenizer.decode(model.generate(inputs['input_ids'], num_beams=4, max_length=128)[0]))
-        exit()
-        result = model.forward(inputs['input_ids'], labels=inputs['input_ids'])
-        for sample in result:
-            print(sample)
-        exit()
-        summary_ids = model.generate(inputs['input_ids'].cuda(), num_beams=16, early_stopping=True)
-        summary_ids = tokenizer.decode(summary_ids[0], skip_special_tokens=True, clean_up_tokenization_spaces=False)
+input_size = 5
+output_size = 2
+batch_size = 30
+data_size = 90
 
-        reconstruct_predict = tokenizer.decode(tokenizer.encode(treat_sample['summary']), skip_special_tokens=True,
-                                               clean_up_tokenization_spaces=False)
-        print(reconstruct_predict)
-        exit()
+# 2） 配置每个进程的gpu
+local_rank = torch.distributed.get_rank()
+torch.cuda.set_device(local_rank)
+device = torch.device("cuda", local_rank)
+
+
+class RandomDataset(Dataset):
+    def __init__(self, size, length):
+        self.len = length
+        self.data = torch.randn(length, size).to('cuda')
+
+    def __getitem__(self, index):
+        return self.data[index]
+
+    def __len__(self):
+        return self.len
+
+
+dataset = RandomDataset(input_size, data_size)
+# 3）使用DistributedSampler
+rand_loader = DataLoader(dataset=dataset,
+                         batch_size=batch_size,
+                         sampler=DistributedSampler(dataset))
+
+
+class Model(nn.Module):
+    def __init__(self, input_size, output_size):
+        super(Model, self).__init__()
+        self.fc = nn.Linear(input_size, output_size)
+
+    def forward(self, input):
+        output = self.fc(input)
+        print("  In Model: input size", input.size(),
+              "output size", output.size())
+        return output
+
+
+model = Model(input_size, output_size)
+
+# 4) 封装之前要把模型移到对应的gpu
+model.to(device)
+
+if torch.cuda.device_count() > 1:
+    print("Let's use", torch.cuda.device_count(), "GPUs!")
+    # 5) 封装
+    model = torch.nn.parallel.DistributedDataParallel(model,
+                                                      device_ids=[local_rank],
+                                                      output_device=local_rank)
+
+for data in rand_loader:
+    if torch.cuda.is_available():
+        input_var = data
+    else:
+        input_var = data
+
+    output = model(input_var)
+    print("Outside: input size", input_var.size(), "output_size", output.size())
