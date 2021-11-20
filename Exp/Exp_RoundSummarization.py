@@ -7,7 +7,7 @@ from transformers import BartTokenizer, BartForConditionalGeneration, BartForCau
 
 episode_number = 10
 learning_rate = 1E-5
-save_path = 'E:/ProjectData/Bart-Large-CNN-RoundTrip-0.5/'
+save_path = 'E:/ProjectData/Bart-Large-CNN-RoundTrip-0.5-ALL/'
 if not os.path.exists(save_path): os.makedirs(save_path)
 
 if __name__ == '__main__':
@@ -26,7 +26,7 @@ if __name__ == '__main__':
     optimizer = torch.optim.RMSprop(summary_model.parameters(), lr=learning_rate)
 
     train_loader, val_loader, test_loader = loader_cnndm(
-        batch_size=2, tokenizer=summary_tokenizer, small_data_flag=True, keywords_name='SalientWords',
+        batch_size=2, tokenizer=summary_tokenizer, small_data_flag=False, keywords_name='SalientWords',
         keywords_masked_article_flag=True)
     print('GSMLM Part Load Completed')
 
