@@ -151,6 +151,47 @@ class CollateClass:
         return batch_article_token, batch_summary_token, {'input_ids': torch.LongTensor(batch_token),
                                                           'mlm_label': torch.LongTensor(batch_lm_label)}
 
+    def collate_masked_summary(self, input_data):
+        mask_id = self.tokenizer.convert_tokens_to_ids(['<unk>'])[0]
+        pad_id = self.tokenizer.convert_tokens_to_ids(['<pad>'])[0]
+
+        batch_token = []
+        for index in range(len(input_data)):
+            current_keywords = self.keywords_dictionary[input_data[index]['filename']]
+            current_keywords_tokens = self.tokenizer.batch_encode_plus(
+                [' ' + _[0] for _ in current_keywords], add_special_tokens=False)['input_ids']
+            current_article_token = self.tokenizer.encode_plus(
+                input_data[index]['article'], add_special_tokens=True, max_length=self.max_article_length,
+                truncation=True)['input_ids']
+
+            indexX = -1
+            while indexX < len(current_article_token):
+                indexX += 1
+                similar_flag = False
+                for indexY in range(len(current_keywords_tokens)):
+                    for indexZ in range(len(current_keywords_tokens[indexY])):
+                        if indexX + indexZ >= len(current_article_token): break
+                        if current_article_token[indexX + indexZ] != current_keywords_tokens[indexY][indexZ]: break
+                    if indexX + indexZ >= len(current_article_token): continue
+                    if current_article_token[indexX + indexZ] == current_keywords_tokens[indexY][indexZ]:
+                        similar_flag = True
+                        break
+                if similar_flag:
+                    for indexZ in range(len(current_keywords_tokens[indexY])):
+                        current_article_token[indexX + indexZ] = mask_id
+                    indexX += indexZ
+                    continue
+
+            batch_token.append(current_article_token)
+
+        treated_input_ids, treated_lm_label = [], []
+        treated_length = max([len(_) for _ in batch_token])
+        for index in range(len(batch_token)):
+            treated_input_ids.append(numpy.concatenate(
+                [batch_token[index], [pad_id for _ in range(treated_length - len(batch_token[index]))]]))
+
+        return {'input_ids': torch.LongTensor(treated_input_ids)}
+
 
 def loader_cnndm(
         batch_size=4, tokenizer=None, train_part_shuffle=True, max_article_length=768, max_summary_length=256,

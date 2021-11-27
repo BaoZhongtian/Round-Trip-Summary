@@ -3,15 +3,15 @@ import json
 import tqdm
 from transformers import BartTokenizer, BartForConditionalGeneration
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+os.environ["CUDA_VISIBLE_DEVICES"] = "2"
 
 if __name__ == '__main__':
     load_path = 'C:/PythonProject/DataSource/'
     test_data = json.load(open(os.path.join(load_path, 'CNNDM_test_part_shuffle.json'), 'r'))
-    for batch_index in range(999, 49999, 1000):
-        save_path = 'E:/ProjectData/Bart-Large-CNN-RoundTrip-0.5/Result-%08d-Test-Shuffled/' % batch_index
+    for batch_index in range(999, 584999, 1000):
+        save_path = 'E:/ProjectData/Bart-Large-CNN-RoundTrip-0.5-ALL/Result-%08d-Test-Shuffled/' % batch_index
         model = BartForConditionalGeneration.from_pretrained(
-            'E:/ProjectData/Bart-Large-CNN-RoundTrip-0.5/%08d-Encoder' % batch_index)
+            'E:/ProjectData/Bart-Large-CNN-RoundTrip-0.5-ALL/%08d-Encoder' % batch_index)
         # save_path = 'C:/PythonProject/DataSource-CNNDM-BART-Predict/test_shuffled'
         # model = BartForConditionalGeneration.from_pretrained(
         #     'C:/PythonProject/bart-large-cnn')
