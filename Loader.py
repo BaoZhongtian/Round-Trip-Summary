@@ -20,7 +20,9 @@ class CollateClass:
         self.keywords_dictionary = {}
         if keywords_name is not None:
             for part in ['train', 'val', 'test']:
-                current_data = json.load(open(os.path.join(LOAD_PATH, 'CNNDM_%s_%s.json' % (keywords_name, part))))
+                # current_data = json.load(open(os.path.join(LOAD_PATH, 'CNNDM_%s_%s.json' % (keywords_name, part))))
+                current_data = json.load(
+                    open(os.path.join(LOAD_PATH, 'CNNDM_%s_%s_Top100.json' % (keywords_name, part))))
                 for sample in current_data:
                     self.keywords_dictionary[sample['filename']] = sample['words']
 
@@ -151,13 +153,13 @@ class CollateClass:
         return batch_article_token, batch_summary_token, {'input_ids': torch.LongTensor(batch_token),
                                                           'mlm_label': torch.LongTensor(batch_lm_label)}
 
-    def collate_masked_summary(self, input_data):
-        mask_id = self.tokenizer.convert_tokens_to_ids(['<unk>'])[0]
+    def collate_masked_summary(self, input_data, masked_counter=999):
+        mask_id = self.tokenizer.convert_tokens_to_ids(['<mask>'])[0]
         pad_id = self.tokenizer.convert_tokens_to_ids(['<pad>'])[0]
 
         batch_token = []
         for index in range(len(input_data)):
-            current_keywords = self.keywords_dictionary[input_data[index]['filename']]
+            current_keywords = self.keywords_dictionary[input_data[index]['filename']][0:masked_counter]
             current_keywords_tokens = self.tokenizer.batch_encode_plus(
                 [' ' + _[0] for _ in current_keywords], add_special_tokens=False)['input_ids']
             current_article_token = self.tokenizer.encode_plus(
@@ -178,11 +180,25 @@ class CollateClass:
                         break
                 if similar_flag:
                     for indexZ in range(len(current_keywords_tokens[indexY])):
-                        current_article_token[indexX + indexZ] = mask_id
+                        # current_article_token[indexX + indexZ] = mask_id
+                        current_article_token[indexX + indexZ] = -9999
                     indexX += indexZ
                     continue
 
             batch_token.append(current_article_token)
+
+        ########################################
+        # print(batch_token)
+        if len(batch_token) == 1:
+            # print('HERE')
+            neo_batch_token = []
+            for index in range(len(batch_token[0])):
+                if batch_token[0][index] == -9999: continue
+                neo_batch_token.append(batch_token[0][index])
+            # print(neo_batch_token)
+            batch_token = numpy.array(neo_batch_token.copy())[numpy.newaxis, :]
+            # print(numpy.shape(batch_token))
+        # exit()
 
         treated_input_ids, treated_lm_label = [], []
         treated_length = max([len(_) for _ in batch_token])
